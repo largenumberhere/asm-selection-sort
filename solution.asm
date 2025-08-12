@@ -1,4 +1,4 @@
-global sort_ascending2
+global sort_ascending
 
 segment .text
 
@@ -7,19 +7,15 @@ segment .text
 ;  - rsi = array pointer
 ; Outputs: none.
 ; Uses sysv calling convention
-sort_ascending2:    
+sort_ascending:    
     ; rax, rdi, rsi, rdx, rcx, r8, r9, r10, r11 are scratch registers
     mov [length], rdi
     mov [array], rsi
 
-    xor r8d, r8d    ; r8d = smallest offset
-    xor rax, rax    ; rax = temporary1
-    xor rcx, rcx    ; ecx = temporary2
-    xor rdi, rdi    ; rdi = smallest value
-    xor rsi, rsi    ; rsi = tmp 4
-    xor rdx, rdx    ; rdx = tmp 5
-
     mov qword [i], 0    ; i = 0
+    
+    ; tmp: rax, rdi rsi, rdx, rcx
+
 loop:
     ; if (i >= length) goto loop_end
     mov rax, [i]
@@ -31,13 +27,15 @@ loop:
     mov rax, [i]
     mov [j], rax
 
-    ; edi (smallest) = array[i]
-    mov rdi, [array]
-    add rdi, [i]
-    mov edi, [rdi]
+    ; smallest = array[i]
+    mov rax, [array]
+    add rax, [i]
+    mov rax, [rax]
+    mov [smallest], rax
 
-    ; r8d (smallest_offset) = i
-    mov r8d, [i]
+    ; initialize smallest_offset to i
+    mov rax, [i]
+    mov [smallest_offset], rax
 
 inner_loop:
     ; if (j >= length) goto end_inner_loop
@@ -45,20 +43,24 @@ inner_loop:
     cmp rax, [length]
     jge end_inner_loop
 
-    ; edx = array[j]
+    ; if (edx >= smallest) goto not_smaller 
     mov rax, [array]
     add rax, [j]
-    mov edx, [rax]
+    mov rax, [rax]  ; rax = array[j]
 
-    ; if (edx >= smallest) goto not_smaller 
-    cmp edx, edi
+    mov rdi, [smallest]
+    cmp rax, rdi
     jge not_smaller
 
-    ; update smallest. edi = edx
-    mov edi, edx
+    ; smallest = array[j]
+    mov rax, [array]
+    add rax, [j]
+    mov rax, [rax]
+    mov [smallest], rax
 
-    ; upsate smallest offset r8d = j
-    mov r8d, [j]
+    ; smallest_offset = j
+    mov rax, [j]
+    mov [smallest_offset], rax
 not_smaller:
 
     inc qword [j]; j++
@@ -66,33 +68,35 @@ not_smaller:
 end_inner_loop:
 
     ; swap current value with smallest
-    mov rax, [array]
-    add rax, r8         
-    mov rsi, rax        ; rsi = &array[smallest_offset]
+    mov rax, [array]            ; rax = array
+    add rax, [smallest_offset]  ; rax = array + smallest_offset
+    mov rsi, rax                ; rsi = array + smallest_offset
 
-    mov rax, [array]
-    add rax, [i]        
-    mov rcx, rax        ; rcx = &array[i]
+    mov rax, [array]            ; rax = array
+    add rax, [i]                ; rax = array + i
+    mov rcx, rax                ; rcx = array + i
 
-    mov rdx, [rcx]      ; rdx = array[i]
-    mov [rsi], rdx      ; array[smallest_offset] = array[i]
-    mov [rcx], r8d      ; array[i] = smallest value
+    mov rdx, [rcx]              ; rdx = array[i]
+
+    mov [rsi], rdx              ; *(array + smallest_offset) = array[i]
+    
+    mov r9, [smallest]
+    mov [rcx], r9               ; *(array + i) = smallest value
 
     inc qword [i]   ; i++
     jmp loop
 loop_end:
 
-
+    xor rax, rax
     ret
 
 segment .data
     length: dq 0
     array: dq 0
     i: dq 0
-    j: dq 0
-    tmp: dq 0    
+    j: dq 0  
     smallest: dq 0
-    smallest_offset: dq
+    smallest_offset: dq 0
 segment .bss
 
 segment .rodata

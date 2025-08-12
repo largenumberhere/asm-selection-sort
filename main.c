@@ -2,24 +2,9 @@
 #include <string.h>
 #include <criterion/criterion.h>
 
-extern void sort_ascending2 (size_t length, int array[length]);
+extern void sort_ascending (size_t length, int array[length]);
 static void print_array (size_t length, const int array[length]);
 
-void sort_ascending(size_t length, int array[length]) {
-    
-    for (int i = 0; i < length; i++) {
-        printf("%i, ", array[i]);
-    }
-    printf("\n");
-    sort_ascending2(length, array);
-
-    for (int i = 0; i < length; i++) {
-        printf("%i, ", array[i]);
-    }
-    printf("\n\n");
-    
-    
-}
 
 void do_test (size_t length, int array[length], const int expected[length])
 {
