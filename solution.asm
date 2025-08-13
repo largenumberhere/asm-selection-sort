@@ -1,8 +1,5 @@
 global sort_ascending
 
-; void swap(int* buffer, int offset1, int offet2)
-extern swap 
-
 segment .text
 
 ; Inputs:
@@ -18,6 +15,9 @@ sort_ascending:
     mov qword [i], 0    ; i = 0
     
     ; tmp: rax, rdi rsi, rdx, rcx
+
+    cmp qword [length], 0
+    jle handle_empty_array
 
 loop:
     ; if (i >= length) goto loop_end
@@ -35,12 +35,12 @@ loop:
     mov rax, [i]
     lea rax, [rax * 4]
     add rax, [array]
-    mov rax, [rax]
+    mov eax, [rax]
     mov dword [smallest], eax
 
     ; initialize smallest_offset to i
     mov rax, [i]
-    mov [smallest_offset], rax
+    mov [smallest_offset], eax
 
 inner_loop:
     ; if (j >= length) goto end_inner_loop
@@ -55,7 +55,7 @@ inner_loop:
     mov eax, [rax]      ; rax = array[j]
 
     mov edi, [smallest]
-    cmp rax, rdi
+    cmp eax, edi
     jge not_smaller
 
     ; smallest = array[j]
@@ -74,32 +74,32 @@ not_smaller:
     jmp inner_loop
 end_inner_loop:
 
-    ; swap current value with smallest. TODO    : implement in asm
+    ; swap current value with smallest
     mov rdi, [array] 
     mov rsi, [smallest_offset]
     mov rdx, [i]
-    call swap
 
-    ; mov rax, [array]            ; rax = array
-    ; add rax, [smallest_offset]  ; rax = array + smallest_offset
-    ; mov rsi, rax                ; rsi = array + smallest_offset
-
-    ; mov rax, [array]            ; rax = array
-    ; add rax, [i]                ; rax = array + i
-    ; mov rcx, rax                ; rcx = array + i
-
-    ; mov rdx, [rcx]              ; rdx = array[i]
-
-    ; mov [rsi], rdx              ; *(array + smallest_offset) = array[i]
+    lea rax, [rdi + (rdx * 4)]    
+    mov r10, rax                  ; r10 = &array[i]
+    mov eax, [rax]                ; rax = array[i]
     
-    ; mov r9, [smallest]
-    ; mov [rcx], r9               ; *(array + i) = smallest value
+    lea rcx, [rdi + (rsi * 4)]  
+    mov r8, rcx                   ; r8 = &array[smallest_offset]
+    mov ecx, [rcx]                ; rxc = array[smallest_offset]
+
+    
+    mov [r10], ecx                ; array[i] = array[smallest_offset]
+    mov [r8], eax                 ; array[smallest_offset] = (copy of) array[i]
 
     inc qword [i]   ; i++
     jmp loop
 loop_end:
 
     xor rax, rax
+    ret
+
+
+handle_empty_array:
     ret
 
 segment .data
