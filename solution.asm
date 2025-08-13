@@ -8,13 +8,11 @@ segment .text
 ; Outputs: none.
 ; Uses sysv calling convention
 sort_ascending:    
-    ; rax, rdi, rsi, rdx, rcx, r8, r9, r10, r11 are scratch registers
+    ; rax, rdi, rsi, rdx, rcx, r8, r9, r10, r11 are used as scratch registers
     mov [length], rdi
     mov [array], rsi
 
     mov qword [i], 0    ; i = 0
-    
-    ; tmp: rax, rdi rsi, rdx, rcx
 
     cmp qword [length], 0
     jle handle_empty_array
@@ -95,7 +93,6 @@ end_inner_loop:
     jmp loop
 loop_end:
 
-    xor rax, rax
     ret
 
 
