@@ -5,6 +5,13 @@
 extern void sort_ascending (size_t length, int array[length]);
 static void print_array (size_t length, const int array[length]);
 
+void swap(int* buffer, int offset1, int offet2) {
+    char tmp1 = buffer[offset1];
+    char tmp2 = buffer[offet2];
+
+    buffer[offet2] = tmp1;
+    buffer[offset1] = tmp2;
+}
 
 void do_test (size_t length, int array[length], const int expected[length])
 {
